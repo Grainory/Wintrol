@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wintrol</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <header style="justify-content: space-between;">
+            <div style="display: flex; align-items: center;">
+                <div class="status-indicator active" id="appIndicator"></div>
+                <h1>WINTROL_SYSTEM</h1>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <!-- CONTROLLER STATUS -->
+                <div id="controllerStatus" style="font-size: 0.8rem; color: #666;">DISCONNECTED</div>
+
+                <!-- ENABLE/DISABLE TOGGLE -->
+                <button id="toggleBtn" class="toggle-btn">STOP</button>
+            </div>
+        </header>
+
+        <main>
+            <section class="control-panel">
+                <div class="control-group">
+                    <label>SENSITIVITY_X</label>
+                    <input type="range" id="sensX" min="1" max="100" value="50">
+                    <span class="value-display" id="valX">50</span>
+                </div>
+
+                <div class="control-group">
+                    <label>SENSITIVITY_Y</label>
+                    <input type="range" id="sensY" min="1" max="100" value="50">
+                    <span class="value-display" id="valY">50</span>
+                </div>
+
+                <div class="control-group">
+                    <label>SCROLL_SPEED</label>
+                    <input type="range" id="scrollSpeed" min="1" max="100" value="50">
+                    <span class="value-display" id="valScroll">50</span>
+                </div>
+
+                <div class="control-group">
+                    <label>DEADZONE</label>
+                    <input type="range" id="deadzone" min="0" max="10000" value="5000">
+                    <span class="value-display" id="valDeadzone">5000</span>
+                </div>
+
+                <div class="mapping-section" style="margin-top: 40px; border-top: 1px solid #333; padding-top: 20px;">
+                    <label style="margin-bottom: 20px;">CONTROLLER MAPPING</label>
+
+                    <!-- TARGET SELECTOR -->
+                    <div class="control-group">
+                        <label>SELECT INPUT TO REMAP</label>
+                        <select id="targetInput">
+                            <option value="mapA">BUTTON A</option>
+                            <option value="mapB">BUTTON B</option>
+                            <option value="mapX">BUTTON X</option>
+                            <option value="mapY">BUTTON Y</option>
+                            <option value="mapLB">LEFT BUMPER</option>
+                            <option value="mapRB">RIGHT BUMPER</option>
+                            <option value="mapLT">LEFT TRIGGER</option>
+                            <option value="mapRT">RIGHT TRIGGER</option>
+                            <option value="mapBack">BACK / SELECT</option>
+                            <option value="mapStart">START</option>
+                            <option value="mapLStick">LEFT STICK CLICK</option>
+                            <option value="mapRStick">RIGHT STICK CLICK</option>
+                            <option value="mapDPadUp">D-PAD UP</option>
+                            <option value="mapDPadDown">D-PAD DOWN</option>
+                            <option value="mapDPadLeft">D-PAD LEFT</option>
+                            <option value="mapDPadRight">D-PAD RIGHT</option>
+                        </select>
+                    </div>
+
+                    <!-- MAPPING CONTROLS (Updates based on selection) -->
+                    <div class="control-group" id="mappingControls"
+                        style="background: #111; padding: 15px; border: 1px solid #333; transition: border-color 0.2s;">
+                        <label>ASSIGNED ACTION</label>
+                        <div class="mapping-controls" style="display: flex; gap: 10px;">
+                            <select id="actionSelect" class="mapping-select">
+                                <option value="left">LEFT CLICK</option>
+                                <option value="right">RIGHT CLICK</option>
+                                <option value="middle">MIDDLE CLICK</option>
+                                <option value="none">NONE</option>
+                                <option value="record">[ RECORD KEY... ]</option>
+                            </select>
+                            <button type="button" class="record-btn" id="recordBtn" style="width: 40px;">●</button>
+                        </div>
+                        <input type="hidden" id="currentRealMap" value="">
+                        <div id="currentDisplay" class="map-display"
+                            style="font-size: 0.8rem; color: #888; margin-top: 5px;">MAPPED: ...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Toast Container will be created by JS, or we can define here -->
+        <div id="toast-container"></div>
+    </div>
+    <script src="renderer.js"></script>
+</body>
+
+</html>

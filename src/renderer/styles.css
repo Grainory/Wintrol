@@ -1,0 +1,233 @@
+body {
+    background-color: #000;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    overflow: hidden;
+}
+
+.container {
+    padding: 20px;
+    height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-y: auto;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #111;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #444;
+    /* Default off */
+    margin-right: 15px;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+}
+
+.status-indicator.active {
+    background-color: #fff;
+    box-shadow: 0 0 8px #fff;
+}
+
+h1 {
+    font-size: 1.2rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.control-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+label {
+    font-size: 0.8rem;
+    color: #ccc;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 18px;
+    background: #eee;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+.value-display {
+    text-align: right;
+    font-size: 0.9rem;
+    font-family: monospace;
+    color: #fff;
+}
+
+select {
+    background: #111;
+    color: #fff;
+    border: 1px solid #333;
+    padding: 8px;
+    font-family: inherit;
+    outline: none;
+    text-transform: uppercase;
+    width: 100%;
+    cursor: pointer;
+}
+
+select:hover {
+    border-color: #666;
+}
+
+.toggle-btn {
+    background: transparent;
+    border: 1px solid #fff;
+    color: #fff;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+    min-width: 80px;
+    transition: all 0.2s;
+}
+
+.toggle-btn:hover {
+    background: #fff;
+    color: #000;
+}
+
+.toggle-btn.stopped {
+    border-color: #666;
+    color: #666;
+}
+
+.toggle-btn.stopped:hover {
+    border-color: #fff;
+    color: #fff;
+    background: transparent;
+}
+
+/* Mapping UI */
+.mapping-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.record-btn {
+    background: #222;
+    border: 1px solid #444;
+    color: #888;
+    cursor: pointer;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.record-btn:hover {
+    border-color: #fff;
+    color: #fff;
+}
+
+.record-btn.recording {
+    background: #a00;
+    border-color: #f00;
+    color: #fff;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 6px rgba(255, 0, 0, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+    }
+}
+
+/* Toast Notifications */
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast {
+    background: #1a1a1a;
+    border-left: 3px solid #fff;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 2px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    opacity: 1;
+    transition: opacity 0.5s ease;
+    min-width: 200px;
+}
+
+.toast.success {
+    border-left-color: #4CAF50;
+}
+
+.toast.info {
+    border-left-color: #2196F3;
+}
