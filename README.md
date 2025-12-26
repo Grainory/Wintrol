@@ -13,11 +13,19 @@ Wintrol is a Windows-based utility that interfaces with XInput devices (controll
 
 ## Installation
 
-### Standard Installation
-1.  Navigate to the **Releases** section of this repository.
-2.  Download the latest installer (`wintrol Setup.exe`).
-3.  Execute the installer and follow the on-screen prompts.
-4.  The application will launch automatically upon completion.
+Wintrol is available in two versions: **Installer** (recommended) and **Portable** (Lite).
+
+### Option 1: Installer (Recommended)
+Best for most users. Creates shortcuts and an uninstaller.
+1.  Download `wintrol Setup.exe`.
+2.  Run the installer.
+3.  Wintrol will launch automatically.
+
+### Option 2: Portable / Lite
+Best for USB drives or use without administrator rights.
+1.  Download `Wintrol Lite.exe`.
+2.  Place it anywhere (e.g., `D:\Tools\`).
+3.  Double-click to run. No installation required.
 
 ## Usage
 
