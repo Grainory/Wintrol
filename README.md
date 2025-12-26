@@ -27,6 +27,13 @@ Best for USB drives or use without administrator rights.
 2.  Place it anywhere (e.g., `D:\Tools\`).
 3.  Double-click to run. No installation required.
 
+> [!NOTE]
+> **Windows SmartScreen Warning**: Since this is a free open-source project, it does not have a paid digital signature. 
+> If you see a "Windows protected your PC" popup:
+> 1. Click **"More Info"**.
+> 2. Click **"Run Anyway"**.
+> This is a standard check for all new software not from the Microsoft Store.
+
 ## Usage
 
 ensure your XInput controller is connected to the PC before or after launching Wintrol. The status indicator in the top-left corner will reflect the device state.
