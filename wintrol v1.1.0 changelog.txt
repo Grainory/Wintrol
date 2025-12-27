@@ -1,0 +1,1 @@
+fix uninstallation process to wipe the folder instead of only part of the uninstallation script

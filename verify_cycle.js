@@ -4,7 +4,8 @@ const path = require('path');
 
 const projectRoot = __dirname;
 const distDir = path.join(projectRoot, 'dist');
-const installDir = path.join(distDir, 'app');
+// Installation Target
+const installDir = path.join('D:\\Wintrol\\app');
 
 console.log('--- Wintrol Verification Cycle ---');
 

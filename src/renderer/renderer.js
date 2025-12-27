@@ -1,26 +1,37 @@
 const { ipcRenderer } = require('electron');
 
-// Standard Inputs
-const sensXInput = document.getElementById('sensX');
-const sensYInput = document.getElementById('sensY');
-const scrollInput = document.getElementById('scrollSpeed');
-const deadzoneInput = document.getElementById('deadzone');
+// --- UI ELEMENTS ---
+const CONTROLS = [
+    { id: 'sensX', valId: 'valX', setting: 'sensitivityX', type: 'int' },
+    { id: 'sensY', valId: 'valY', setting: 'sensitivityY', type: 'int' },
+    { id: 'scrollSpeed', valId: 'valScroll', setting: 'scrollSpeed', type: 'int' },
+    { id: 'deadzone', valId: 'valDeadzone', setting: 'deadzone', type: 'int' }
+];
 
-// Stats
-const valX = document.getElementById('valX');
-const valY = document.getElementById('valY');
-const valScroll = document.getElementById('valScroll');
-const valDeadzone = document.getElementById('valDeadzone');
+// Mappings (Button ID prefixes)
+// Button ID: "btnA", Reset ID: "resetA", Setting: "mapA"
+const MAPPING_CONFIG = [
+    { id: 'mapA', btnId: 'btnA', resetId: 'resetA' },
+    { id: 'mapB', btnId: 'btnB', resetId: 'resetB' },
+    { id: 'mapX', btnId: 'btnX', resetId: 'resetX' },
+    { id: 'mapY', btnId: 'btnY', resetId: 'resetY' },
+    { id: 'mapLB', btnId: 'btnLB', resetId: 'resetLB' },
+    { id: 'mapRB', btnId: 'btnRB', resetId: 'resetRB' },
+    { id: 'mapLT', btnId: 'btnLT', resetId: 'resetLT' },
+    { id: 'mapRT', btnId: 'btnRT', resetId: 'resetRT' },
+    { id: 'mapBack', btnId: 'btnBack', resetId: 'resetBack' },
+    { id: 'mapStart', btnId: 'btnStart', resetId: 'resetStart' },
+    { id: 'mapLStick', btnId: 'btnLStick', resetId: 'resetLStick' },
+    { id: 'mapRStick', btnId: 'btnRStick', resetId: 'resetRStick' },
+    { id: 'mapDPadUp', btnId: 'btnDPadUp', resetId: 'resetDPadUp' },
+    { id: 'mapDPadDown', btnId: 'btnDPadDown', resetId: 'resetDPadDown' },
+    { id: 'mapDPadLeft', btnId: 'btnDPadLeft', resetId: 'resetDPadLeft' },
+    { id: 'mapDPadRight', btnId: 'btnDPadRight', resetId: 'resetDPadRight' }
+];
 
-// Mapping UI
-const targetInput = document.getElementById('targetInput');
-const actionSelect = document.getElementById('actionSelect');
-const recordBtn = document.getElementById('recordBtn');
-const currentRealMap = document.getElementById('currentRealMap');
-const currentDisplay = document.getElementById('currentDisplay');
-
-// State for mappings
-let mappings = {}; // Will load from main
+// Global State
+let mappings = {};
+let isEnabled = true;
 
 // --- TOAST NOTIFICATIONS ---
 function showToast(message, type = 'info') {
@@ -34,256 +45,282 @@ function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.innerText = message;
-
-    // Add info icon or check
     if (type === 'success') toast.innerHTML = '✔ ' + message;
 
     toastContainer.appendChild(toast);
 
-    // Fade out
     setTimeout(() => {
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 500);
     }, 2000);
 }
 
+// --- LOGIC: SLIDERS ---
+function updateSliderVisual(slider) {
+    const min = parseInt(slider.min) || 0;
+    const max = parseInt(slider.max) || 100;
+    const val = parseInt(slider.value);
+    const percent = ((val - min) / (max - min)) * 100;
+    slider.style.setProperty('--value-percent', `${percent}%`);
+}
+
+function setupSliders() {
+    CONTROLS.forEach(ctrl => {
+        const slider = document.getElementById(ctrl.id);
+        const numberBox = document.getElementById(ctrl.valId);
+
+        updateSliderVisual(slider);
+
+        slider.addEventListener('input', (e) => {
+            numberBox.value = e.target.value;
+            updateSliderVisual(e.target);
+            saveSettings();
+        });
+
+        numberBox.addEventListener('input', (e) => {
+            let val = parseInt(e.target.value);
+            const min = parseInt(slider.min);
+            const max = parseInt(slider.max);
+            if (val < min) val = min;
+            if (val > max) val = max;
+            if (isNaN(val)) val = min;
+
+            slider.value = val;
+            updateSliderVisual(slider);
+            saveSettings();
+        });
+    });
+}
+
+// --- LOGIC: MAPPINGS (MINECRAFT STYLE) ---
 function formatMapping(val) {
-    if (!val) return 'NONE';
-    if (val === 'left') return 'LEFT CLICK';
-    if (val === 'right') return 'RIGHT CLICK';
-    if (val === 'middle') return 'MIDDLE CLICK';
-    if (val === 'none') return 'NONE';
-    if (val.startsWith('key:')) return `KEY ${val.split(':')[1]}`;
-    if (val.startsWith('combo:')) return `COMBO ${val.split(':')[1]}`;
+    if (!val || val === 'none') return 'None';
+    if (val === 'left') return 'Left Click';
+    if (val === 'right') return 'Right Click';
+    if (val === 'middle') return 'Middle Click';
+    if (val.startsWith('key:')) {
+        const code = val.split(':')[1];
+        // TODO: Map keycodes to names if possible. For now standard codes.
+        // We could look up char codes, but let's keep it simple.
+        return `Key ${code}`; // e.g. Key 65
+    }
+    if (val.startsWith('combo:')) return 'Combo';
     return val;
 }
 
-// UI Sync Functions
-function loadMappingForTarget() {
-    const target = targetInput.value; // e.g., 'mapA'
-    const val = mappings[target] || 'none';
+function setupMappings() {
+    MAPPING_CONFIG.forEach(cfg => {
+        const btn = document.getElementById(cfg.btnId);
+        const reset = document.getElementById(cfg.resetId); // Optional
 
-    // Update Hidden Input (Source of Truth for Logic)
-    currentRealMap.value = val;
+        if (btn) {
+            btn.addEventListener('click', () => {
+                if (isRecording) {
+                    cancelRecording();
+                } else {
+                    startRecording(cfg.id);
+                }
+            });
+        }
 
-    // Update visual Dropdown
-    if (['left', 'right', 'middle', 'none'].includes(val)) {
-        actionSelect.value = val;
-    } else {
-        actionSelect.value = 'record'; // It's a key/combo
-    }
-
-    // Update Display Text
-    currentDisplay.innerText = `MAPPED: ${formatMapping(val)}`;
-
-    // Visual tweak to mapping box
-    const controls = document.getElementById('mappingControls');
-    if (controls) {
-        controls.style.borderColor = '#444';
-        setTimeout(() => controls.style.borderColor = '#333', 200);
-    }
+        if (reset) {
+            reset.addEventListener('click', () => {
+                mappings[cfg.id] = 'none';
+                saveSettings();
+                refreshMappingUI(cfg.id);
+                showToast('Reset to None', 'info');
+            });
+        }
+    });
 }
 
-function saveCurrentMapping() {
-    const target = targetInput.value;
-    const val = currentRealMap.value;
+function refreshMappingUI(id) {
+    const cfg = MAPPING_CONFIG.find(c => c.id === id);
+    if (!cfg) return;
 
-    if (mappings[target] !== val) {
-        mappings[target] = val;
-        // Send FULL update to main
-        updateSettings();
-
-        // Show Toast
-        const targetName = targetInput.options[targetInput.selectedIndex].text;
-        showToast(`${targetName} mapped to ${formatMapping(val)}`, 'success');
+    const btn = document.getElementById(cfg.btnId);
+    if (btn) {
+        const val = mappings[id] || 'none';
+        btn.innerText = formatMapping(val);
+        btn.classList.remove('recording');
     }
 }
 
-// Global update function
-function updateSettings() {
-    const settings = {
-        sensitivityX: parseInt(sensXInput.value),
-        sensitivityY: parseInt(sensYInput.value),
-        scrollSpeed: parseInt(scrollInput.value),
-        deadzone: parseInt(deadzoneInput.value),
-        enabled: isEnabled, // Global enabled state
-
-        // Spread all mappings
-        ...mappings
-    };
-
-    valX.innerText = settings.sensitivityX;
-    valY.innerText = settings.sensitivityY;
-    valScroll.innerText = settings.scrollSpeed;
-    valDeadzone.innerText = settings.deadzone;
-
-    ipcRenderer.send('save-settings', settings);
+function refreshAllMappings() {
+    MAPPING_CONFIG.forEach(cfg => refreshMappingUI(cfg.id));
 }
 
-// Event Listeners
-
-// 1. Selector Change -> Load new data (don't save!)
-targetInput.addEventListener('change', loadMappingForTarget);
-
-// 2. Action Select Change -> Save data
-actionSelect.addEventListener('change', (e) => {
-    const val = e.target.value;
-    if (val === 'record') return; // Handled by button
-
-    currentRealMap.value = val;
-    currentDisplay.innerText = `MAPPED: ${formatMapping(val)}`;
-    saveCurrentMapping();
-});
-
-// 3. Recording Logic
+// --- RECORDING ---
 let isRecording = false;
+let recordingTarget = null;
 let recordedKeys = new Set();
 
-function startRecording() {
-    if (isRecording) stopRecording();
+function startRecording(targetId) {
+    if (isRecording) cancelRecording();
 
     isRecording = true;
-    recordBtn.classList.add('recording');
-    recordBtn.innerText = '■';
+    recordingTarget = targetId;
     recordedKeys.clear();
+
+    const cfg = MAPPING_CONFIG.find(c => c.id === targetId);
+    if (cfg) {
+        const btn = document.getElementById(cfg.btnId);
+        if (btn) {
+            btn.innerText = '> PRESS KEY <';
+            btn.classList.add('recording');
+        }
+    }
 
     document.addEventListener('keydown', handleRecordKey);
     document.addEventListener('keyup', handleRecordUp);
+    document.addEventListener('mousedown', handleRecordMouse); // Allow binding Mouse clicks
 
-    showToast('Recording... Press keys.', 'info');
+    // Click outside to cancel? Or strictly key press?
+    // Let's stick to explicitly pressing.
 }
 
-function stopRecording() {
+function cancelRecording() {
     if (!isRecording) return;
+    const oldId = recordingTarget;
     isRecording = false;
-    recordBtn.classList.remove('recording');
-    recordBtn.innerText = '●';
+    recordingTarget = null;
 
     document.removeEventListener('keydown', handleRecordKey);
     document.removeEventListener('keyup', handleRecordUp);
+    document.removeEventListener('mousedown', handleRecordMouse);
 
-    if (recordedKeys.size > 0) {
-        const keys = Array.from(recordedKeys);
-        const newVal = keys.length === 1 ? `key:${keys[0]}` : `combo:${keys.join(',')}`;
+    if (oldId) refreshMappingUI(oldId);
+}
 
-        currentRealMap.value = newVal;
-        actionSelect.value = 'record'; // Ensure dropdown shows record context
-        currentDisplay.innerText = `MAPPED: ${formatMapping(newVal)}`;
+function handleRecordMouse(e) {
+    if (!isRecording) return;
+    // 0=Left, 1=Middle, 2=Right
+    let val = 'none';
+    if (e.button === 0) val = 'left';
+    if (e.button === 1) val = 'middle';
+    if (e.button === 2) val = 'right';
 
-        saveCurrentMapping();
+    // Don't bind to interaction clicks if outside app context?
+    // Actually, clicking the button itself might trigger this. 
+    // We should be careful. Click-to-bind usually waits for *next* input.
+    // The click that STARTED recording shouldn't count.
+    // We'll rely on keydown mostly, or verify targeting.
+
+    if (val !== 'none') {
+        finishRecording(val);
     }
 }
 
 function handleRecordKey(e) {
     e.preventDefault();
     if (!isRecording) return;
-    const code = e.keyCode;
-    if (!recordedKeys.has(code)) recordedKeys.add(code);
+    recordedKeys.add(e.keyCode);
 }
 
 function handleRecordUp(e) {
     e.preventDefault();
     if (!isRecording) return;
-    stopRecording();
+    finishRecordingWithKeys();
 }
 
-recordBtn.addEventListener('click', () => {
-    if (isRecording) stopRecording();
-    else startRecording();
-});
-
-// Standard Inputs
-[sensXInput, sensYInput, scrollInput, deadzoneInput].forEach(el => {
-    el.addEventListener('input', updateSettings);
-});
-
-// Toggle Logic
-const toggleBtn = document.getElementById('toggleBtn');
-const controllerStatus = document.getElementById('controllerStatus');
-let isEnabled = true;
-
-toggleBtn.addEventListener('click', () => {
-    isEnabled = !isEnabled;
-    updateSettings(); // Sends enabled state
-    updateToggleUI();
-
-    showToast(isEnabled ? 'System Started' : 'System Stopped', isEnabled ? 'success' : 'info');
-});
-
-function updateToggleUI() {
-    if (isEnabled) {
-        toggleBtn.innerText = "STOP";
-        toggleBtn.className = "toggle-btn running";
+function finishRecordingWithKeys() {
+    if (recordedKeys.size > 0) {
+        const keys = Array.from(recordedKeys);
+        const newVal = keys.length === 1 ? `key:${keys[0]}` : `combo:${keys.join(',')}`;
+        finishRecording(newVal);
     } else {
-        toggleBtn.innerText = "START";
-        toggleBtn.className = "toggle-btn stopped";
+        cancelRecording();
     }
 }
 
-// IPC Status Update
+function finishRecording(newValue) {
+    if (recordingTarget) {
+        mappings[recordingTarget] = newValue;
+        saveSettings();
+        showToast('Mapped!', 'success');
+    }
+    cancelRecording(); // Cleans up UI
+}
+
+// --- MAIN LOGIC ---
+
+function saveSettings() {
+    const settings = {
+        enabled: isEnabled,
+        ...mappings
+    };
+    CONTROLS.forEach(ctrl => {
+        const el = document.getElementById(ctrl.id);
+        settings[ctrl.setting] = parseInt(el.value);
+    });
+    ipcRenderer.send('save-settings', settings);
+}
+
+// Window Controls
+document.getElementById('minBtn').addEventListener('click', () => ipcRenderer.send('window-minimize'));
+document.getElementById('closeBtn').addEventListener('click', () => ipcRenderer.send('window-close'));
+
+// Toggle
+document.getElementById('toggleBtn').addEventListener('click', () => {
+    isEnabled = !isEnabled;
+    updateToggleUI();
+    saveSettings();
+});
+
+function updateToggleUI() {
+    const btn = document.getElementById('toggleBtn');
+    const badge = document.getElementById('statusBadge');
+
+    if (isEnabled) {
+        btn.innerText = 'STOP';
+        btn.className = 'toggle-btn stop';
+    } else {
+        btn.innerText = 'START';
+        btn.className = 'toggle-btn start';
+    }
+}
+
 ipcRenderer.on('status-update', (event, data) => {
-    // Force toggle visual sync 
     if (isEnabled !== data.enabled) {
         isEnabled = data.enabled;
         updateToggleUI();
     }
+    const badge = document.getElementById('statusBadge');
+    const text = document.getElementById('statusText');
+    const indicator = badge.querySelector('.status-dot');
 
-    const ts = new Date(data.timestamp).toLocaleTimeString();
-
+    // Only update if not disconnected
     if (data.connected) {
-        if (!data.enabled) {
-            controllerStatus.innerText = `PAUSED (CONNECTED) [${ts}]`;
-            controllerStatus.style.color = "#ffaa00"; // Orange
-        } else {
-            controllerStatus.innerText = `CONNECTED [${ts}]`;
-            controllerStatus.style.color = "#44ff44"; // Green
-        }
+        badge.classList.remove('disconnected');
+        text.innerText = isEnabled ? 'CONNECTED' : 'PAUSED';
+        indicator.style.background = isEnabled ? '#22c55e' : '#f97316';
+        indicator.style.boxShadow = isEnabled ? '0 0 12px #22c55e' : '0 0 12px #f97316';
+        badge.style.borderColor = isEnabled ? 'rgba(34, 197, 94, 0.2)' : 'rgba(249, 115, 22, 0.2)';
+        badge.style.color = isEnabled ? '#4ade80' : '#fb923c';
+        badge.style.background = isEnabled ? 'rgba(34, 197, 94, 0.1)' : 'rgba(249, 115, 22, 0.1)';
     } else {
-        controllerStatus.innerText = `DISCONNECTED [${ts}]`;
-        controllerStatus.style.color = "#666";
+        badge.classList.add('disconnected');
+        badge.style = '';
+        indicator.style = '';
+        text.innerText = 'DISCONNECTED';
     }
 });
 
-// --- INITIALIZATION ---
+// Init
 async function init() {
-    // Fetch settings from main process
     const settings = await ipcRenderer.invoke('get-settings');
-
-    // Apply to UI
-    sensXInput.value = settings.sensitivityX;
-    sensYInput.value = settings.sensitivityY;
-    scrollInput.value = settings.scrollSpeed;
-    deadzoneInput.value = settings.deadzone;
+    CONTROLS.forEach(ctrl => {
+        document.getElementById(ctrl.id).value = settings[ctrl.setting];
+        document.getElementById(ctrl.valId).value = settings[ctrl.setting];
+    });
     isEnabled = settings.enabled;
-
-    // Apply mappings
-    mappings = {
-        mapA: settings.mapA,
-        mapB: settings.mapB,
-        mapX: settings.mapX,
-        mapY: settings.mapY,
-        mapLB: settings.mapLB,
-        mapRB: settings.mapRB,
-        mapLT: settings.mapLT,
-        mapRT: settings.mapRT,
-        mapBack: settings.mapBack,
-        mapStart: settings.mapStart,
-        mapLStick: settings.mapLStick,
-        mapRStick: settings.mapRStick,
-        mapDPadUp: settings.mapDPadUp,
-        mapDPadDown: settings.mapDPadDown,
-        mapDPadLeft: settings.mapDPadLeft,
-        mapDPadRight: settings.mapDPadRight
-    };
-
     updateToggleUI();
-    loadMappingForTarget(); // Update mapping UI
-
-    // Update labels
-    valX.innerText = settings.sensitivityX;
-    valY.innerText = settings.sensitivityY;
-    valScroll.innerText = settings.scrollSpeed;
-    valDeadzone.innerText = settings.deadzone;
+    MAPPING_CONFIG.forEach(cfg => {
+        mappings[cfg.id] = settings[cfg.id];
+    });
+    setupSliders();
+    setupMappings();
+    refreshAllMappings();
 }
 
 init();

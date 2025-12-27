@@ -35,16 +35,35 @@ function createWindow() {
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width, height } = primaryDisplay.workAreaSize;
 
-    mainWindow = new BrowserWindow({
+    const isLite = app.getName().includes('Lite');
+
+    // Main App (Premium) vs Lite App (Utility)
+    const windowConfig = isLite ? {
+        // LITE: Standard Window
         width: 800,
         height: 600,
+        frame: true,
+        transparent: false,
+        backgroundColor: '#202020'
+    } : {
+        // MAIN: Frameless & Transparent (Mica-ready)
+        width: 850,
+        height: 700,
+        frame: false,
+        transparent: true,
+        backgroundColor: '#00000000', // Transparent for rounded corners
+        hasShadow: true,
+        resizable: true
+    };
+
+    mainWindow = new BrowserWindow({
+        ...windowConfig,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false, // For easier IPC in MVP, strictly local app
         },
-        frame: true,
-        show: false, // Don't show until ready
-        icon: path.join(__dirname, 'icon.png') // Placeholder
+        show: false,
+        icon: path.join(__dirname, 'assets/icon.png')
     });
 
     mainWindow.loadFile(path.join(__dirname, 'renderer/index.html'));
@@ -167,6 +186,18 @@ ipcMain.on('save-settings', (event, newSettings) => {
     if (oldEnabled !== settings.enabled) {
         log(`Settings Updated: Enabled = ${settings.enabled}`);
     }
+    if (oldEnabled !== settings.enabled) {
+        log(`Settings Updated: Enabled = ${settings.enabled}`);
+    }
+});
+
+// Window Controls
+ipcMain.on('window-minimize', () => {
+    if (mainWindow) mainWindow.minimize();
+});
+
+ipcMain.on('window-close', () => {
+    if (mainWindow) mainWindow.close();
 });
 
 // Import native modules
