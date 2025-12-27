@@ -206,8 +206,21 @@ const mouse = require('./mouse');
 const keyboard = require('./keyboard');
 
 // Polling loop
-const POLLING_RATE = 16; // ms (~60Hz)
+const POLLING_RATE = 4; // ms (~250Hz) for smoother mouse
+let lastPollTime = Date.now();
+
 setInterval(() => {
+    // Calculate Delta Time (dt) specifically for movement scaling
+    // Standardize to 16ms (previous baseline) so sensitivity doesn't change
+    // If polling is faster (e.g. 4ms), dtRatio will be ~0.25
+    const now = Date.now();
+    const dt = now - lastPollTime;
+    lastPollTime = now;
+
+    // Avoid huge jumps if lagged (cap at 50ms)
+    const safeDt = Math.min(dt, 50);
+    const dtRatio = safeDt / 16.0;
+
     // Log once
     if (!global.loggedStart) {
         log(`Polling started. Available: ${xinput.isAvailable}`);
@@ -246,7 +259,6 @@ setInterval(() => {
     }
 
     // Update UI (Throttled to ~2 times per second)
-    const now = Date.now();
     if (!global.lastUiUpdate || now - global.lastUiUpdate > 500) {
         if (mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible()) {
             const statusData = {
@@ -291,12 +303,33 @@ setInterval(() => {
         const speedFactorX = settings.sensitivityX / 5;
         const speedFactorY = settings.sensitivityY / 5;
 
-        const moveX = Math.pow(Math.abs(normX), 2) * Math.sign(normX) * speedFactorX;
-        const moveY = Math.pow(Math.abs(normY), 2) * Math.sign(normY) * -speedFactorY; // Invert Y for screen coords
+        // Apply dtRatio scaling for smooth movement independent of polling rate
+        const moveX = Math.pow(Math.abs(normX), 2) * Math.sign(normX) * speedFactorX * dtRatio;
+        const moveY = Math.pow(Math.abs(normY), 2) * Math.sign(normY) * -speedFactorY * dtRatio; // Invert Y for screen coords
 
         // Move Mouse
-        const current = mouse.getPos();
-        mouse.move(Math.round(current.x + moveX), Math.round(current.y + moveY));
+        // Accumulate fractional movement to prevent "stair-stepping" at high framerates
+        if (!global.accumX) global.accumX = 0;
+        if (!global.accumY) global.accumY = 0;
+
+        global.accumX += moveX;
+        global.accumY += moveY;
+
+        const intMoveX = Math.round(global.accumX);
+        const intMoveY = Math.round(global.accumY);
+
+        if (intMoveX !== 0 || intMoveY !== 0) {
+            const current = mouse.getPos();
+            mouse.move(current.x + intMoveX, current.y + intMoveY);
+
+            // Subtract the applied integer movement from accumulator
+            global.accumX -= intMoveX;
+            global.accumY -= intMoveY;
+        }
+    } else {
+        // Reset sub-pixel accumulator when stopped
+        global.accumX = 0;
+        global.accumY = 0;
     }
 
     // Buttons
@@ -405,11 +438,20 @@ setInterval(() => {
         // Scroll speed
         // Base multiplier was 50
         const scrollFactor = settings.scrollSpeed || 50;
-        const scrollSpeed = Math.pow(Math.abs(normScrollY), 2) * Math.sign(normScrollY) * scrollFactor;
+        const scrollSpeed = Math.pow(Math.abs(normScrollY), 2) * Math.sign(normScrollY) * scrollFactor * dtRatio;
 
-        if (Math.abs(scrollSpeed) > 1) {
-            mouse.scroll(Math.round(scrollSpeed));
+        // Accumulate scroll
+        if (!global.accumScrollY) global.accumScrollY = 0;
+        global.accumScrollY += scrollSpeed;
+
+        const intScrollY = Math.round(global.accumScrollY);
+
+        if (Math.abs(intScrollY) >= 1) {
+            mouse.scroll(intScrollY);
+            global.accumScrollY -= intScrollY;
         }
+    } else {
+        global.accumScrollY = 0;
     }
 
 }, POLLING_RATE);
