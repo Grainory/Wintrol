@@ -1,1 +1,25 @@
-fix uninstallation process to wipe the folder instead of only part of the uninstallation script
+# Wintrol v1.1.0 Changelog
+Release Date: 2025-12-27
+
+## New Features & UI Overhaul
+- **High-Fidelity Interface**: Completely redesigned UI with a modern, frameless window aesthetic featuring transparency and blur effects (Mica-style).
+- **Minecraft-Style Mapping**: New two-column grid layout for controller mappings, mimicking the requested visual style.
+- **Click-to-Bind System**: Replaced dropdown menus with intuitive "Click to Record" buttons for assigning keys and mouse actions.
+- **Custom Iconography**: Integrated distinct custom icons for all controller buttons (A, B, X, Y, Bumpers, Triggers, D-Pad) to replace generic text labels.
+- **New App Branding**: Updated application icon across the Window, Taskbar, Installer, and Uninstaller using the latest visual asset.
+
+## Improvements
+- **Visual Polish**:
+  - Added drop shadows to Number Inputs and Mapping Buttons for better depth and visibility.
+  - Restored the vertical divider line between mapping columns.
+  - Added "Reset" buttons for every individual mapping to quickly clear bindings.
+- **Layout**: Fixed column alignment issues to ensure a clean, symmetrical grid.
+- **Window Controls**: Integrated custom Minimize and Close buttons into the header to match the frameless design.
+
+## Bug Fixes
+- **Rounded Corners**: Resolved white artifact issues on window corners by correctly implementing transparent window backgrounds with a solid CSS container.
+- **Icon Rendering**: Fixed ICO generation issues by resizing assets to standard 256x256 dimensions.
+
+## Technical
+- **Version**: Bumped to 1.1.0.
+- **Assets**: Structured asset management with a dedicated `src/assets` directory.
