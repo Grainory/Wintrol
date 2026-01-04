@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wintrol</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="logo-text">WINTROL</div>
+
+            <div class="header-controls">
+                <!-- Status -->
+                <div class="status-badge" id="statusBadge">
+                    <div class="status-dot"></div>
+                    <span id="statusText">CONNECTED</span>
+                </div>
+
+                <!-- Toggle -->
+                <button id="toggleBtn" class="toggle-btn stop">STOP</button>
+            </div>
+
+            <!-- Window Controls -->
+            <div class="window-controls">
+                <button id="minBtn" class="win-btn min">&minus;</button>
+                <button id="closeBtn" class="win-btn close">&times;</button>
+            </div>
+        </header>
+
+        <!-- CONTENT -->
+        <main class="main-content">
+
+            <!-- SLIDERS -->
+            <div class="controls-section">
+                <!-- ... sliders ... -->
+                <div class="control-row">
+                    <label class="label-text">SENSITIVITY X</label>
+                    <input type="range" id="sensX" min="1" max="100" value="50">
+                    <input type="number" id="valX" class="number-box" min="1" max="100" value="50">
+                </div>
+
+                <div class="control-row">
+                    <label class="label-text">SENSITIVITY Y</label>
+                    <input type="range" id="sensY" min="1" max="100" value="50">
+                    <input type="number" id="valY" class="number-box" min="1" max="100" value="50">
+                </div>
+
+                <div class="control-row">
+                    <label class="label-text">SCROLL SPEED</label>
+                    <input type="range" id="scrollSpeed" min="1" max="100" value="50">
+                    <input type="number" id="valScroll" class="number-box" min="1" max="100" value="50">
+                </div>
+
+                <div class="control-row">
+                    <label class="label-text">DEADZONE</label>
+                    <input type="range" id="deadzone" min="0" max="10000" step="100" value="5000">
+                    <input type="number" id="valDeadzone" class="number-box" min="0" max="10000" step="100"
+                        value="5000">
+                </div>
+            </div>
+
+            <!-- MAPPINGS HEADER -->
+            <div class="mapping-section-title">
+                <div class="mapping-header">
+                    <span>CONTROLLER MAPPING</span>
+                    <div class="line"></div>
+                </div>
+            </div>
+
+            <!-- BUTTONS SECTION -->
+            <div class="section-title"><span>BUTTONS</span></div>
+            <div class="mapping-grid-container">
+                <div class="mapping-item">
+                    <label><img src="assets/A.png" class="btn-icon-img"> BUTTON A</label>
+                    <div class="bind-group">
+                        <button id="btnA" class="bind-btn">None</button>
+                        <button id="resetA" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+                <div class="mapping-item">
+                    <label><img src="assets/B.png" class="btn-icon-img"> BUTTON B</label>
+                    <div class="bind-group">
+                        <button id="btnB" class="bind-btn">None</button>
+                        <button id="resetB" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+                <!-- Divider Removed -->
+                <div class="mapping-item">
+                    <label><img src="assets/X.png" class="btn-icon-img"> BUTTON X</label>
+                    <div class="bind-group">
+                        <button id="btnX" class="bind-btn">None</button>
+                        <button id="resetX" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+                <div class="mapping-item">
+                    <label><img src="assets/Y.png" class="btn-icon-img"> BUTTON Y</label>
+                    <div class="bind-group">
+                        <button id="btnY" class="bind-btn">None</button>
+                        <button id="resetY" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BUMPERS & TRIGGERS -->
+            <div class="section-title"><span>BUMPERS</span></div>
+            <div class="mapping-grid-container">
+                <div class="mapping-item">
+                    <label><img src="assets/LB.png" class="btn-icon-img"> LEFT BUMPER</label>
+                    <div class="bind-group">
+                        <button id="btnLB" class="bind-btn">None</button>
+                        <button id="resetLB" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+                <div class="mapping-item">
+                    <label><img src="assets/RB.png" class="btn-icon-img"> RIGHT BUMPER</label>
+                    <div class="bind-group">
+                        <button id="btnRB" class="bind-btn">None</button>
+                        <button id="resetRB" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title"><span>TRIGGERS</span></div>
+            <div class="mapping-grid-container">
+                <div class="mapping-item">
+                    <label><img src="assets/LT.png" class="btn-icon-img"> LEFT TRIGGER</label>
+                    <div class="bind-group">
+                        <button id="btnLT" class="bind-btn">None</button>
+                        <button id="resetLT" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+                <div class="mapping-item">
+                    <label><img src="assets/RT.png" class="btn-icon-img"> RIGHT TRIGGER</label>
+                    <div class="bind-group">
+                        <button id="btnRT" class="bind-btn">None</button>
+                        <button id="resetRT" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STICK CLICKS -->
+            <div class="section-title"><span>STICK CLICKS</span></div>
+            <div class="mapping-grid-container">
+                <div class="mapping-item">
+                    <label><img src="assets/L3.png" class="btn-icon-img"> LEFT STICK CLICK</label>
+                    <div class="bind-group">
+                        <button id="btnLStick" class="bind-btn">None</button>
+                        <button id="resetLStick" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+                <div class="mapping-item">
+                    <label><img src="assets/R3.png" class="btn-icon-img"> RIGHT STICK CLICK</label>
+                    <div class="bind-group">
+                        <button id="btnRStick" class="bind-btn">None</button>
+                        <button id="resetRStick" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SYSTEM -->
+            <div class="section-title"><span>SYSTEM</span></div>
+            <div class="mapping-grid-container">
+                <div class="mapping-item">
+                    <label><img src="assets/Back.png" class="btn-icon-img"> BACK / SELECT</label>
+                    <div class="bind-group">
+                        <button id="btnBack" class="bind-btn">None</button>
+                        <button id="resetBack" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+                <div class="mapping-item">
+                    <label><img src="assets/Start.png" class="btn-icon-img"> START</label>
+                    <div class="bind-group">
+                        <button id="btnStart" class="bind-btn">None</button>
+                        <button id="resetStart" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- D-PAD -->
+            <div class="section-title"><span>D-PAD</span></div>
+            <div class="mapping-grid-container">
+                <div class="mapping-item">
+                    <label><span class="dpad-icon">▲</span> UP</label>
+                    <div class="bind-group">
+                        <button id="btnDPadUp" class="bind-btn">None</button>
+                        <button id="resetDPadUp" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+                <div class="mapping-item">
+                    <label><span class="dpad-icon">▼</span> DOWN</label>
+                    <div class="bind-group">
+                        <button id="btnDPadDown" class="bind-btn">None</button>
+                        <button id="resetDPadDown" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+                <!-- Divider Removed -->
+                <div class="mapping-item">
+                    <label><span class="dpad-icon">◄</span> LEFT</label>
+                    <div class="bind-group">
+                        <button id="btnDPadLeft" class="bind-btn">None</button>
+                        <button id="resetDPadLeft" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+                <div class="mapping-item">
+                    <label><span class="dpad-icon">►</span> RIGHT</label>
+                    <div class="bind-group">
+                        <button id="btnDPadRight" class="bind-btn">None</button>
+                        <button id="resetDPadRight" class="reset-btn">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <div id="toast-container"></div>
+    </div>
+    <script src="renderer.js"></script>
+</body>
+
+</html>
