@@ -21,7 +21,7 @@ Best for most users. Creates shortcuts and an uninstaller.
 2.  Run the installer.
 3.  Wintrol will launch automatically.
 
-### Option 2: Portable / Lite
+### Option 2: Portable / Lite (can be download in release 1.0.0)
 Best for USB drives or use without administrator rights.
 1.  Download `Wintrol Lite.exe`.
 2.  Place it anywhere (e.g., `D:\Tools\`).
@@ -100,3 +100,4 @@ Wintrol is built on the **Electron** framework, utilizing a split-process archit
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
