@@ -285,9 +285,52 @@ function saveSettings() {
     ipcRenderer.send('save-settings', settings);
 }
 
+// --- ANIMATION CONTROLLER ---
+function playEntryAnimation() {
+    const container = document.querySelector('.app-container');
+    container.classList.remove('closing');
+
+    // Force Reflow/Replay
+    container.style.animation = 'none';
+    container.offsetHeight; /* trigger reflow */
+    container.style.animation = 'scaleIn 0.35s cubic-bezier(0.1, 0.9, 0.2, 1) forwards';
+}
+
+function playExitAnimation(onComplete) {
+    const container = document.querySelector('.app-container');
+    container.classList.add('closing');
+
+    // CRITICAL FIX: Override previous inline animation (scaleIn)
+    container.style.animation = 'none';
+    container.offsetHeight; /* trigger reflow */
+    container.style.animation = 'scaleOut 0.3s cubic-bezier(0.1, 0.9, 0.2, 1) forwards';
+
+    // Match CSS duration (0.3s)
+    setTimeout(() => {
+        // Prevent stutter on restore by hiding content logic if needed
+        // container.style.opacity = '0'; // (Handled by CSS keyframe mostly, but good to ensure)
+        if (onComplete) onComplete();
+    }, 300);
+}
+
 // Window Controls
-document.getElementById('minBtn').addEventListener('click', () => ipcRenderer.send('window-minimize'));
-document.getElementById('closeBtn').addEventListener('click', () => ipcRenderer.send('window-close'));
+document.getElementById('minBtn').addEventListener('click', () => {
+    playExitAnimation(() => ipcRenderer.send('window-minimize'));
+});
+
+document.getElementById('closeBtn').addEventListener('click', () => {
+    playExitAnimation(() => ipcRenderer.send('window-close'));
+});
+
+// System Close Request (Alt+F4 or Taskbar)
+ipcRenderer.on('request-close', () => {
+    playExitAnimation(() => ipcRenderer.send('window-close-confirmed'));
+});
+
+// Restore Animation (Re-entry)
+ipcRenderer.on('window-restored', () => {
+    playEntryAnimation();
+});
 
 // Toggle
 document.getElementById('toggleBtn').addEventListener('click', () => {
@@ -350,6 +393,9 @@ async function init() {
     setupSliders();
     setupMappings();
     refreshAllMappings();
+
+    // Force standard entry animation on launch
+    playEntryAnimation();
 }
 
 init();

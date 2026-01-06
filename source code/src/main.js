@@ -72,14 +72,35 @@ function createWindow() {
         mainWindow.show();
     });
 
+    // Animation Triggers
+    mainWindow.on('show', () => {
+        mainWindow.webContents.send('window-restored');
+    });
+    mainWindow.on('restore', () => {
+        mainWindow.webContents.send('window-restored');
+    });
+
     // Handle minimize/close to tray
     mainWindow.on('close', (event) => {
         if (!isQuitting) {
             event.preventDefault();
-            mainWindow.hide();
+            // Ask renderer to play animation first
+            mainWindow.webContents.send('request-close');
         }
         // If quitting, let it close
         return false;
+    });
+
+    ipcMain.on('window-minimize', () => {
+        if (mainWindow) mainWindow.minimize();
+    });
+
+    ipcMain.on('window-close', () => {
+        if (mainWindow) mainWindow.hide();
+    });
+
+    ipcMain.on('window-close-confirmed', () => {
+        if (mainWindow) mainWindow.hide();
     });
 }
 
@@ -197,7 +218,8 @@ ipcMain.on('window-minimize', () => {
 });
 
 ipcMain.on('window-close', () => {
-    if (mainWindow) mainWindow.close();
+    // Renderer called this button, so it already played animation
+    if (mainWindow) mainWindow.hide();
 });
 
 // Import native modules
